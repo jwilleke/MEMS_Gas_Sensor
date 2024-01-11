@@ -2,7 +2,7 @@
 
 #include "DFRobot_MICS.h"
 #include <config.h>
-
+#include <ArduinoJson.h>
 
 /**
  * select i2c device address
@@ -26,6 +26,27 @@ uint8_t csPin = D3;
 DFRobot_ENS160_SPI ENS160(&SPI, csPin);
 #endif
 
+void dumpData(uint8_t hexCode)
+{
+  float co_gasdata = float(MICS.getGasData(hexCode));
+  if (co_gasdata == EXIST)
+  {
+    Serial.print("  YES ");
+  }
+  else
+  {
+    Serial.println(" NO ");
+  }
+  int8_t gasFlag = MICS.getGasExist(hexCode);
+  if (gasFlag == EXIST)
+  {
+    Serial.print("  YES ");
+  }
+  else
+  {
+    Serial.println(" NO ");
+  }
+}
 
 void setup()
 {
@@ -44,6 +65,7 @@ void setup()
   The data obtained in sleep mode is wrong
  */
   uint8_t mode = MICS.getPowerState();
+
   if (mode == SLEEP_MODE)
   {
     MICS.wakeUpMode();
@@ -93,12 +115,22 @@ void loop()
   Serial.print("Ethanol: ");
   Serial.print(float(MICS.getGasData(C2H5OH)));
   Serial.print(" PPM  ");
-  //Serial.print("Propane: ");
-  //Serial.print(float(MICS.getGasData(C3H8)));
-  //Serial.print(" PPM  ");
-  //Serial.print("Iso Butane: ");
-  //Serial.print(float(MICS.getGasData(C4H10)));
-  //Serial.print(" PPM  ");
+  Serial.print("Propane: Present?");
+  int8_t gasFlag = MICS.getGasExist(C3H8);
+  if (gasFlag == EXIST)
+  {
+    Serial.print("  YES ");
+  }
+  else
+  {
+    Serial.println(" NO ");
+  }
+  Serial.print(" Level ");
+  Serial.print(float(MICS.getGasData(C3H8)));
+  Serial.print(" PPM  ");
+  Serial.print("Iso Butane: ");
+  Serial.print(float(MICS.getGasData(C4H10)));
+  Serial.print(" PPM  ");
   float h2_gasdata = MICS.getGasData(H2);
   Serial.print("Hydrogen: ");
   Serial.print(h2_gasdata, 1);
@@ -107,9 +139,9 @@ void loop()
   Serial.print("Ammonia: ");
   Serial.print(nh3_gasdata, 1);
   Serial.print(" PPM  ");
-  //Serial.print("Nitric Oxide: ");
-  //Serial.print(float(MICS.getGasData(NO)));
-  //Serial.print(" PPM  ");
+  Serial.print("Nitric Oxide: ");
+  Serial.print(float(MICS.getGasData(NO)));
+  Serial.print(" PPM  ");
   float no2_gasdata = MICS.getGasData(NO2);
   Serial.print("Nitrogen Dioxide: ");
   Serial.print(no2_gasdata, 1);
